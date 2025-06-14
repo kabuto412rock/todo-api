@@ -12,7 +12,7 @@ type TodoHandler struct {
 }
 
 func NewTodoHandler(r *gin.Engine, uc *usecase.TodoUseCase) {
-	handler := &TodoHandler{}
+	handler := &TodoHandler{uc: uc}
 
 	r.POST("/todos", handler.Create)
 	r.GET("/todos", handler.List)
