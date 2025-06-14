@@ -20,10 +20,7 @@ func NewTodoUseCase(repo domain.TodoRepository) *TodoUseCase {
 func (uc *TodoUseCase) CreateTodo(title string, dueDate string) error {
 	// 處理業務邏輯
 	// 注意: UseCase 不知道資料從哪裡來，也不管要存去哪裡
-	dueTime, err := parseDate(dueDate)
-	if err != nil {
-		return err
-	}
+	dueTime := parseDate(dueDate)
 	todo := &domain.Todo{
 		ID:      generateID(),
 		Title:   title,
@@ -39,7 +36,7 @@ func generateID() string {
 	return uuid.New().String()
 }
 
-func parseDate(dateStr string) (time.Time, error) {
-	layout := "2006-01-02 15:04:05"
-	return time.Parse(layout, dateStr) // 這只是示例，實際應該解析 dateStr
+func parseDate(dateStr string) time.Time {
+	t, _ := time.Parse("2006-01-02", dateStr)
+	return t
 }
