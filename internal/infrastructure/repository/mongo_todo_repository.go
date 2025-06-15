@@ -70,3 +70,25 @@ func (r *MongoTodoRepository) DeleteByID(id string) error {
 	}
 	return err
 }
+
+func (r *MongoTodoRepository) FindByID(id string) (*domain.Todo, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var item struct {
+		ID      string    `bson:"_id"`
+		Title   string    `bson:"title"`
+		DueDate time.Time `bson:"dueDate"`
+	}
+	err := r.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&item)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil // No error if no document found
+		}
+		return nil, err
+	}
+	return &domain.Todo{
+		ID:      item.ID,
+		Title:   item.Title,
+		DueDate: item.DueDate,
+	}, nil
+}

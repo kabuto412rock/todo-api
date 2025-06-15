@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"fmt"
 	"testing"
 	"time"
 	"todo-app/internal/domain"
@@ -30,6 +31,14 @@ func (m *mockTodoRepository) DeleteByID(id string) error {
 	return nil // or an error if not found
 }
 
+func (m *mockTodoRepository) FindByID(id string) (*domain.Todo, error) {
+	for _, todo := range m.stored {
+		if todo.ID == id {
+			return todo, nil
+		}
+	}
+	return nil, fmt.Errorf("todo with ID %s not found", id)
+}
 func TestCreateTodo(t *testing.T) {
 	repo := &mockTodoRepository{}
 	uc := NewTodoUseCase(repo)
@@ -81,4 +90,25 @@ func TestDeleteTodo(t *testing.T) {
 	todos, err = uc.GetAllTodos()
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(todos))
+}
+
+func TestGetTodoByID(t *testing.T) {
+	repo := &mockTodoRepository{}
+	uc := NewTodoUseCase(repo)
+
+	// Create a todo to find
+	title := "Learn Clean Architecture"
+	dueDate := "2025-07-01"
+	err := uc.CreateTodo(title, dueDate)
+	assert.NoError(t, err)
+
+	todos, err := uc.GetAllTodos()
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(todos))
+
+	// Find the todo by ID
+	foundTodo, err := uc.GetTodoByID(todos[0].ID)
+	assert.NoError(t, err)
+	assert.NotNil(t, foundTodo)
+	assert.Equal(t, title, foundTodo.Title)
 }
