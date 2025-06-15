@@ -5,4 +5,5 @@ type TodoRepository interface {
 	FindAll() ([]*Todo, error)
 	DeleteByID(id string) error
 	FindByID(id string) (*Todo, error)
+	UpdateByID(todo *Todo) error
 }

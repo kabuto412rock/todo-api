@@ -44,6 +44,17 @@ func (uc *TodoUseCase) GetTodoByID(id string) (*domain.Todo, error) {
 	}
 	return todo, nil
 }
+
+func (uc *TodoUseCase) UpdateTodo(id string, title, dueDate string) error {
+	dueTime := parseDate(dueDate)
+	todo := &domain.Todo{
+		ID:      id,
+		Title:   title,
+		DueDate: dueTime,
+	}
+	return uc.repo.UpdateByID(todo)
+}
+
 func generateID() string {
 	return uuid.New().String()
 }

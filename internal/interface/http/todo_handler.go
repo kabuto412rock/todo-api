@@ -18,6 +18,7 @@ func NewTodoHandler(r *gin.Engine, uc *usecase.TodoUseCase) {
 	r.GET("/todos", handler.List)
 	r.GET("/todos/:id", handler.GetByID)
 	r.DELETE("/todos/:id", handler.Delete)
+	r.PUT("/todos/:id", handler.UpdateByID)
 }
 
 func (h *TodoHandler) Create(c *gin.Context) {
@@ -72,4 +73,28 @@ func (h *TodoHandler) GetByID(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, todo)
+}
+
+func (h *TodoHandler) UpdateByID(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is required"})
+		return
+	}
+
+	var body struct {
+		Title   string `json:"title" binding:"required"`
+		DueDate string `json:"due_date" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+
+	err := h.uc.UpdateTodo(id, body.Title, body.DueDate)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update todo"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "todo updated"})
 }

@@ -39,6 +39,16 @@ func (m *mockTodoRepository) FindByID(id string) (*domain.Todo, error) {
 	}
 	return nil, fmt.Errorf("todo with ID %s not found", id)
 }
+
+func (m *mockTodoRepository) UpdateByID(todo *domain.Todo) error {
+	for i, existingTodo := range m.stored {
+		if existingTodo.ID == todo.ID {
+			m.stored[i] = todo
+			return nil
+		}
+	}
+	return fmt.Errorf("todo with ID %s not found", todo.ID)
+}
 func TestCreateTodo(t *testing.T) {
 	repo := &mockTodoRepository{}
 	uc := NewTodoUseCase(repo)
@@ -111,4 +121,29 @@ func TestGetTodoByID(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, foundTodo)
 	assert.Equal(t, title, foundTodo.Title)
+}
+
+func TestUpdateTodo(t *testing.T) {
+	repo := &mockTodoRepository{}
+	uc := NewTodoUseCase(repo)
+
+	// Create a todo to update
+	title := "Learn Clean Architecture"
+	dueDate := "2025-07-01"
+	err := uc.CreateTodo(title, dueDate)
+	assert.NoError(t, err)
+
+	todos, err := uc.GetAllTodos()
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(todos))
+
+	// Update the todo
+	todos[0].Title = "Learn Clean Architecture Updated"
+	err = uc.UpdateTodo(todos[0].ID, todos[0].Title, todos[0].DueDate.Format("2006-01-02"))
+	assert.NoError(t, err)
+
+	// Verify the todo is updated
+	updatedTodo, err := uc.GetTodoByID(todos[0].ID)
+	assert.NoError(t, err)
+	assert.Equal(t, "Learn Clean Architecture Updated", updatedTodo.Title)
 }
