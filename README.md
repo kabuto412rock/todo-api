@@ -1,5 +1,5 @@
 從ChatGPT學習Clean Architecture並用golang實踐
-
+```bash
 todo-app/
 ├── cmd/                  # 啟動入口（main）
 │   └── main.go
@@ -15,3 +15,10 @@ todo-app/
 │   └── infrastructure/   # 實際實作（DB、第三方等）
 │       └── repository/
 │           └── mongo_todo_repository.go
+
+# 1. clone a .env
+cp .env.example .env
+
+# 2. make server run!
+go run cmd/main.go
+```

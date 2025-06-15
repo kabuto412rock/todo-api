@@ -31,6 +31,6 @@ Thumbs.db
 # Logs
 *.log
 
-
+# Ignore files and directories used exclusively for local development purposes
 mongodb_data/
 .env
