@@ -59,3 +59,14 @@ func (r *MongoTodoRepository) FindAll() ([]*domain.Todo, error) {
 	}
 	return todos, nil
 }
+
+func (r *MongoTodoRepository) DeleteByID(id string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
+	if err == mongo.ErrNoDocuments {
+		return nil // No error if no document found
+	}
+	return err
+}

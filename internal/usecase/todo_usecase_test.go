@@ -20,6 +20,15 @@ func (m *mockTodoRepository) Save(todo *domain.Todo) error {
 func (m *mockTodoRepository) FindAll() ([]*domain.Todo, error) {
 	return m.stored, nil
 }
+func (m *mockTodoRepository) DeleteByID(id string) error {
+	for i, todo := range m.stored {
+		if todo.ID == id {
+			m.stored = append(m.stored[:i], m.stored[i+1:]...)
+			return nil
+		}
+	}
+	return nil // or an error if not found
+}
 
 func TestCreateTodo(t *testing.T) {
 	repo := &mockTodoRepository{}
@@ -46,6 +55,30 @@ func TestGetAllTodos(t *testing.T) {
 	uc := NewTodoUseCase(repo)
 
 	todos, err := uc.GetAllTodos()
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(todos))
+}
+
+func TestDeleteTodo(t *testing.T) {
+	repo := &mockTodoRepository{}
+	uc := NewTodoUseCase(repo)
+
+	// Create a todo to delete
+	title := "Learn Clean Architecture"
+	dueDate := "2025-07-01"
+	err := uc.CreateTodo(title, dueDate)
+	assert.NoError(t, err)
+
+	todos, err := uc.GetAllTodos()
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(todos))
+
+	// Delete the todo
+	err = uc.DeleteTodo(todos[0].ID)
+	assert.NoError(t, err)
+
+	// Verify the todo is deleted
+	todos, err = uc.GetAllTodos()
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(todos))
 }

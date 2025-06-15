@@ -32,6 +32,10 @@ func (uc *TodoUseCase) CreateTodo(title string, dueDate string) error {
 func (uc *TodoUseCase) GetAllTodos() ([]*domain.Todo, error) {
 	return uc.repo.FindAll()
 }
+
+func (uc *TodoUseCase) DeleteTodo(id string) error {
+	return uc.repo.DeleteByID(id)
+}
 func generateID() string {
 	return uuid.New().String()
 }
