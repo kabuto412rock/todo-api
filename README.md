@@ -1,24 +1,24 @@
-從ChatGPT學習Clean Architecture並用golang實踐
+Learning Clean Architecture from ChatGPT and implementing it with Golang
 ```bash
 todo-app/
-├── cmd/                  # 啟動入口（main）
+├── cmd/                  # Entry point (main)
 │   └── main.go
 ├── internal/
-│   ├── domain/           # Entity + Interface 定義
+│   ├── domain/           # Entity + Interface definitions
 │   │   ├── todo.go
 │   │   └── repository.go
-│   ├── usecase/          # UseCase 實作
+│   ├── usecase/          # UseCase implementations
 │   │   └── todo_usecase.go
-│   ├── interface/        # 交互層 (handler/controller)
+│   ├── interface/        # Interface layer (handler/controller)
 │   │   └── http/
 │   │       └── todo_handler.go
-│   └── infrastructure/   # 實際實作（DB、第三方等）
+│   └── infrastructure/   # Actual implementations (DB, third-party, etc.)
 │       └── repository/
 │           └── mongo_todo_repository.go
 
-# 1. clone a .env
+# 1. Clone a .env file
 cp .env.example .env
 
-# 2. make server run!
+# 2. Run the server!
 go run cmd/main.go
 ```
