@@ -30,3 +30,7 @@ Thumbs.db
 
 # Logs
 *.log
+
+
+mongodb_data/
+.env
