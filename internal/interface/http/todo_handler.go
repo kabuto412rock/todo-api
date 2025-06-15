@@ -16,6 +16,7 @@ func NewTodoHandler(r *gin.Engine, uc *usecase.TodoUseCase) {
 
 	r.POST("/todos", handler.Create)
 	r.GET("/todos", handler.List)
+	r.DELETE("/todos/:id", handler.Delete)
 }
 
 func (h *TodoHandler) Create(c *gin.Context) {
@@ -38,4 +39,18 @@ func (h *TodoHandler) Create(c *gin.Context) {
 func (h *TodoHandler) List(c *gin.Context) {
 	todos, _ := h.uc.GetAllTodos()
 	c.JSON(http.StatusOK, todos)
+}
+
+func (h *TodoHandler) Delete(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is required"})
+		return
+	}
+	err := h.uc.DeleteTodo(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete todo"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "todo deleted"})
 }
