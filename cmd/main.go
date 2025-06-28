@@ -3,15 +3,20 @@ package main
 import (
 	"context"
 	"log"
+	netHttp "net/http"
 	"os"
 	"todo-app/internal/infrastructure/repository"
 	"todo-app/internal/interface/http"
 	"todo-app/internal/usecase"
 
-	"github.com/gin-gonic/gin"
+	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/danielgtaylor/huma/v2"
+	"github.com/danielgtaylor/huma/v2/adapters/humachi"
+	_ "github.com/danielgtaylor/huma/v2/formats/cbor"
 )
 
 func main() {
@@ -49,10 +54,15 @@ func main() {
 
 	db := client.Database(dbName)
 
-	r := gin.Default()
 	repo := repository.NewMongoTodoRepository(db)
 	uc := usecase.NewTodoUseCase(repo)
-	http.NewTodoHandler(r, uc)
 
-	r.Run(":8080")
+	humaPort := "8081"
+	log.Println("Starting Huma server on :" + humaPort + "...\n")
+	router := chi.NewRouter()
+	api := humachi.New(router, huma.DefaultConfig("My API", "1.0.0"))
+	http.NewTodoHandler(api, uc)
+	if err := netHttp.ListenAndServe(":"+humaPort, router); err != nil {
+		log.Fatalf("Failed to start Huma server: %v", err)
+	}
 }
