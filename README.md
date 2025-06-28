@@ -29,17 +29,12 @@ A simple Todo REST API built with Go, following Clean Architecture principles.
 - [Optional] Docker for running MongoDB locally
 
 ## Environment Variables
-
 Create a `.env` file at the project root and set the following variables:
-
 ```bash
-MONGO_URI="mongodb://localhost:27017"
-DB_NAME="todoapp"
-PORT="8080"
+cp .env.example .env
 ```
 
 ## Installation
-
 ```bash
 go mod tidy
 ```
@@ -47,7 +42,6 @@ go mod tidy
 ## Running the server
 
 ```bash
-cp .env.example .env
 go run cmd/main.go
 ```
 

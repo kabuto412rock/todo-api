@@ -28,7 +28,7 @@ func main() {
 
 	dbName := os.Getenv("MONGO_DB_NAME")
 	dbClientURI := os.Getenv("MONGO_DB_URI")
-
+	apiPort := os.Getenv("API_PORT")
 	// 直接用 URI 建立 MongoDB 連線選項
 	clientOptions := options.Client().ApplyURI(dbClientURI)
 
@@ -57,12 +57,11 @@ func main() {
 	repo := repository.NewMongoTodoRepository(db)
 	uc := usecase.NewTodoUseCase(repo)
 
-	humaPort := "8081"
-	log.Println("Starting Huma server on :" + humaPort + "...\n")
+	log.Println("Starting Huma server on :" + apiPort + "...\n")
 	router := chi.NewRouter()
 	api := humachi.New(router, huma.DefaultConfig("My API", "1.0.0"))
 	http.NewTodoHandler(api, uc)
-	if err := netHttp.ListenAndServe(":"+humaPort, router); err != nil {
+	if err := netHttp.ListenAndServe(":"+apiPort, router); err != nil {
 		log.Fatalf("Failed to start Huma server: %v", err)
 	}
 }
