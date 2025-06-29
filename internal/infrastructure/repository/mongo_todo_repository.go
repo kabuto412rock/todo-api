@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"time"
 	"todo-app/internal/domain"
 
@@ -64,9 +65,13 @@ func (r *MongoTodoRepository) DeleteByID(id string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
-	if err == mongo.ErrNoDocuments {
-		return nil // No error if no document found
+	result, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
+	if err != nil {
+		return err
+	}
+
+	if result.DeletedCount == 0 {
+		return errors.New("there is no document with the given ID")
 	}
 	return err
 }
@@ -82,7 +87,7 @@ func (r *MongoTodoRepository) FindByID(id string) (*domain.Todo, error) {
 	err := r.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&item)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, nil // No error if no document found
+			return nil, errors.New("there is no document with the given ID")
 		}
 		return nil, err
 	}
