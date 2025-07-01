@@ -2,7 +2,7 @@ package http
 
 import (
 	"context"
-	"todo-app/internal/usecase"
+	"todo-app/internal/todo/usecase"
 
 	"github.com/danielgtaylor/huma/v2"
 )

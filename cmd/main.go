@@ -5,9 +5,13 @@ import (
 	"log"
 	netHttp "net/http"
 	"os"
-	"todo-app/internal/infrastructure/repository"
-	"todo-app/internal/interface/http"
-	"todo-app/internal/usecase"
+	todoRepository "todo-app/internal/todo/infrastructure/repository"
+	todoHttp "todo-app/internal/todo/interface/http"
+	todoUsecase "todo-app/internal/todo/usecase"
+
+	authRepository "todo-app/internal/auth/infrastructure/repository"
+	authHttp "todo-app/internal/auth/interface/http"
+	authUsecase "todo-app/internal/auth/usecase"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
@@ -54,13 +58,19 @@ func main() {
 
 	db := client.Database(dbName)
 
-	repo := repository.NewMongoTodoRepository(db)
-	uc := usecase.NewTodoUseCase(repo)
+	todoRepo := todoRepository.NewMongoTodoRepository(db)
+	todoUc := todoUsecase.NewTodoUseCase(todoRepo)
+	authRepo := authRepository.NewMemoryRepo()
+	loginUc := authUsecase.NewLoginUsecase(authRepo)
+	registerUc := authUsecase.NewRegisterUsecase(authRepo)
+	jwtSecret := os.Getenv("JWT_SECRET")
 
 	log.Println("Starting Huma server on :" + apiPort + "...\n")
 	router := chi.NewRouter()
 	api := humachi.New(router, huma.DefaultConfig("My API", "1.0.0"))
-	http.NewTodoHandler(api, uc)
+	todoHttp.NewTodoHandler(api, todoUc)
+	authHttp.NewHandler(api, registerUc, loginUc, []byte(jwtSecret))
+
 	if err := netHttp.ListenAndServe(":"+apiPort, router); err != nil {
 		log.Fatalf("Failed to start Huma server: %v", err)
 	}

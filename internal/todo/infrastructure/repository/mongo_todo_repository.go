@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"time"
-	"todo-app/internal/domain"
+	"todo-app/internal/todo/domain"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

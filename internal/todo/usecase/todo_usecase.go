@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"time"
-	"todo-app/internal/domain"
+	"todo-app/internal/todo/domain"
 
 	"github.com/google/uuid"
 )

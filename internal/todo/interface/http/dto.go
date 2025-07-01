@@ -1,6 +1,6 @@
 package http
 
-import "todo-app/internal/domain"
+import "todo-app/internal/todo/domain"
 
 type (
 	CreateTodoInput struct {

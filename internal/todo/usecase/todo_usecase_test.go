@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 	"time"
-	"todo-app/internal/domain"
+	"todo-app/internal/todo/domain"
 
 	"github.com/stretchr/testify/assert"
 )
