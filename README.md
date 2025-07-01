@@ -55,6 +55,12 @@ go run cmd/main.go
 | PUT    | /todos/:id | Update an existing todo |
 | DELETE | /todos/:id | Delete a todo           |
 
+### Auth Endpoints
+
+| Method | Route        | Description          |
+| ------ | ------------ | -------------------- |
+| POST   | /auth/login  | User login           |
+| POST   | /auth/register | User registration    |
 ## Running Tests
 
 ```bash
