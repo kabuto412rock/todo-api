@@ -5,7 +5,6 @@ import (
 	"todo-app/internal/auth/usecase"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 type handler struct {
@@ -53,21 +52,7 @@ func (h *handler) Login(ctx context.Context, in *authInput) (*loginOutput, error
 	if err != nil {
 		return nil, err
 	}
-
-	token, err := generateJWT(user.Username, h.JWTSecret)
-	if err != nil {
-		return nil, err
-	}
 	result := &loginOutput{}
-	result.Body.Token = token
+	result.Body.Token = user.Token
 	return result, nil
-}
-
-// generateJWT generates a JWT token for the given username and secret.
-func generateJWT(username string, secret []byte) (string, error) {
-	claims := jwt.MapClaims{
-		"username": username,
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(secret)
 }
