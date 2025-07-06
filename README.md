@@ -42,7 +42,7 @@ go mod tidy
 ## Running the server
 
 ```bash
-go run cmd/main.go
+make run
 ```
 
 ## API Endpoints
@@ -64,6 +64,6 @@ go run cmd/main.go
 ## Running Tests
 
 ```bash
-go test ./internal/usecase
+make test
 ```
 
