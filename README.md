@@ -1,23 +1,4 @@
 Learning Clean Architecture from ChatGPT and implementing it with Golang
-```bash
-todo-app/
-├── cmd
-│   └── main.go                 # Entry point (main)
-├── internal
-│   ├── domain                  # Entity + Interface definitions
-│   │   ├── repository.go
-│   │   └── todo.go
-│   ├── infrastructure          # Actual implementations (DB, third-party, etc.)
-│   │   └── repository
-│   │       └── mongo_todo_repository.go
-│   ├── interface               # Interface layer (handler/controller)
-│   │   └── http
-│   │       ├── dto.go
-│   │       └── todo_handler.go
-│   └── usecase                 # UseCase implementations
-│       ├── todo_usecase.go
-│       └── todo_usecase_test.go
-```
 ## Description
 
 A simple Todo REST API built with Go, following Clean Architecture principles.
