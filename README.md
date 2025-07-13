@@ -42,7 +42,7 @@ go mod tidy
 ## Running the server
 
 ```bash
-go run cmd/main.go
+make run
 ```
 
 ## API Endpoints
@@ -55,9 +55,15 @@ go run cmd/main.go
 | PUT    | /todos/:id | Update an existing todo |
 | DELETE | /todos/:id | Delete a todo           |
 
+### Auth Endpoints
+
+| Method | Route        | Description          |
+| ------ | ------------ | -------------------- |
+| POST   | /auth/login  | User login           |
+| POST   | /auth/register | User registration    |
 ## Running Tests
 
 ```bash
-go test ./internal/usecase
+make test
 ```
 

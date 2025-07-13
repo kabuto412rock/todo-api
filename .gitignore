@@ -34,3 +34,5 @@ Thumbs.db
 # Ignore files and directories used exclusively for local development purposes
 mongodb_data/
 .env
+# Build output directory
+/bin/

@@ -2,7 +2,8 @@ package http
 
 import (
 	"context"
-	"todo-app/internal/usecase"
+	"net/http"
+	"todo-app/internal/todo/usecase"
 
 	"github.com/danielgtaylor/huma/v2"
 )
@@ -14,11 +15,45 @@ type TodoHandler struct {
 func NewTodoHandler(api huma.API, uc *usecase.TodoUseCase) {
 	handler := &TodoHandler{uc: uc}
 
-	huma.Post(api, "/todos", handler.Create)
-	huma.Get(api, "/todos", handler.List)
-	huma.Get(api, "/todos/{id}", handler.GetByID)
-	huma.Delete(api, "/todos/{id}", handler.DeleteByID)
-	huma.Put(api, "/todos/{id}", handler.UpdateByID)
+	grp := huma.NewGroup(api, "/todos")
+	myAuthSecurity := []map[string][]string{
+		{"myAuth": {}},
+	}
+	huma.Register(grp, huma.Operation{
+		OperationID: "create-todo",
+		Summary:     "Create a new todo item",
+		Method:      http.MethodPost,
+		Path:        "",
+		Security:    myAuthSecurity,
+	}, handler.Create)
+	huma.Register(grp, huma.Operation{
+		OperationID: "list-todos",
+		Summary:     "List all todo items",
+		Method:      http.MethodGet,
+		Path:        "",
+		Security:    myAuthSecurity,
+	}, handler.List)
+	huma.Register(grp, huma.Operation{
+		OperationID: "get-todo-by-id",
+		Summary:     "Get a todo item by ID",
+		Method:      http.MethodGet,
+		Path:        "/{id}",
+		Security:    myAuthSecurity,
+	}, handler.GetByID)
+	huma.Register(grp, huma.Operation{
+		OperationID: "delete-todo-by-id",
+		Summary:     "Delete a todo item by ID",
+		Method:      http.MethodDelete,
+		Path:        "/{id}",
+		Security:    myAuthSecurity,
+	}, handler.DeleteByID)
+	huma.Register(grp, huma.Operation{
+		OperationID: "update-todo-by-id",
+		Summary:     "Update a todo item by ID",
+		Method:      http.MethodPut,
+		Path:        "/{id}",
+		Security:    myAuthSecurity,
+	}, handler.UpdateByID)
 }
 
 func (h *TodoHandler) Create(ctx context.Context, input *CreateTodoInput) (*CreateTodoOutput, error) {
