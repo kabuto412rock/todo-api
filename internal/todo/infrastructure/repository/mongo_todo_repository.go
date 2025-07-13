@@ -8,6 +8,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type MongoTodoRepository struct {
@@ -25,9 +26,11 @@ func (r *MongoTodoRepository) Save(todo *domain.Todo) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	_, err := r.collection.InsertOne(ctx, bson.M{
-		"_id":     todo.ID,
-		"title":   todo.Title,
-		"dueDate": todo.DueDate,
+		"_id":       todo.ID,
+		"title":     todo.Title,
+		"dueDate":   todo.DueDate,
+		"createdAt": time.Now(),
+		"updatedAt": time.Now(),
 	})
 	return err
 }
@@ -36,7 +39,9 @@ func (r *MongoTodoRepository) FindAll() ([]*domain.Todo, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	cursor, err := r.collection.Find(ctx, bson.M{})
+	cursor, err := r.collection.Find(ctx, bson.M{}, &options.FindOptions{
+		Sort: bson.D{{Key: "createdAt", Value: -1}}, // Sort by createdAt in descending order
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -104,8 +109,9 @@ func (r *MongoTodoRepository) UpdateByID(todo *domain.Todo) error {
 
 	_, err := r.collection.UpdateOne(ctx, bson.M{"_id": todo.ID}, bson.M{
 		"$set": bson.M{
-			"title":   todo.Title,
-			"dueDate": todo.DueDate,
+			"title":     todo.Title,
+			"dueDate":   todo.DueDate,
+			"updatedAt": time.Now(),
 		},
 	})
 	if err == mongo.ErrNoDocuments {

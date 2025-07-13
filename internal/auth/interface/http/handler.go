@@ -10,11 +10,10 @@ import (
 type handler struct {
 	RegisterUC usecase.RegisterUsecase
 	LoginUC    usecase.LoginUsecase
-	JWTSecret  []byte
 }
 
-func NewHandler(api huma.API, reg usecase.RegisterUsecase, login usecase.LoginUsecase, jwtSecret []byte) {
-	h := handler{RegisterUC: reg, LoginUC: login, JWTSecret: jwtSecret}
+func NewHandler(api huma.API, reg usecase.RegisterUsecase, login usecase.LoginUsecase) {
+	h := handler{RegisterUC: reg, LoginUC: login}
 
 	huma.Post(api, "/auth/register", h.Register)
 	huma.Post(api, "/auth/login", h.Login)

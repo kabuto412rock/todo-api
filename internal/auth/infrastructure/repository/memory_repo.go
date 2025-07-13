@@ -23,7 +23,7 @@ func (r *memoryRepo) CreateUser(user domain.AuthUser) error {
 func (r *memoryRepo) GetUserByUsername(username string) (domain.AuthUser, error) {
 	u, ok := users[username]
 	if !ok {
-		return domain.AuthUser{}, errors.New("user not found")
+		return domain.AuthUser{}, errors.New("user [" + username + "] not found")
 	}
 	return u, nil
 }
