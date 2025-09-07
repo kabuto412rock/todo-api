@@ -6,10 +6,19 @@
     "customizations": {
         "vscode": {
             "extensions": [
-                "golang.go"
-            ]
+                "golang.go",
+                "ms-azuretools.vscode-docker",
+                "mongodb.mongodb-vscode"
+            ],
+            "settings": {
+                "go.useLanguageServer": true,
+                "gopls": {
+                    "ui.semanticTokens": true
+                },
+                "go.toolsManagement.checkForUpdates": "local"
+            }
         }
     },
-    "postCreateCommand": "go mod tidy",
+    "postCreateCommand": "go mod tidy", // Run after container is created
     "remoteUser": "root"
 }

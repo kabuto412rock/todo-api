@@ -1,5 +1,5 @@
 # Go development environment
-FROM golang:1.24
+FROM golang:1.25-bookworm
 
 # Install necessary tools
 RUN apt-get update && apt-get install -y \
