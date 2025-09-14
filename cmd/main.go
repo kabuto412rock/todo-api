@@ -4,84 +4,51 @@ import (
 	"context"
 	"log"
 	netHttp "net/http"
-	"os"
 	"regexp"
-	"todo-app/internal/api/middleware"
-	todoRepository "todo-app/internal/todo/infrastructure/repository"
-	todoHttp "todo-app/internal/todo/interface/http"
-	todoUsecase "todo-app/internal/todo/usecase"
 
-	authRepository "todo-app/internal/auth/infrastructure/repository"
-	authHttp "todo-app/internal/auth/interface/http"
-	authUsecase "todo-app/internal/auth/usecase"
-
-	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/danielgtaylor/huma/v2"
-	"github.com/danielgtaylor/huma/v2/adapters/humachi"
-	_ "github.com/danielgtaylor/huma/v2/formats/cbor"
+	authRepo "todo-app/internal/auth/infrastructure/repository"
+	"todo-app/internal/config"
+	"todo-app/internal/server"
+	todoRepo "todo-app/internal/todo/infrastructure/repository"
 )
 
 func main() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	_ = godotenv.Load(".env")
+	cfg := config.Load()
 
-	dbName := os.Getenv("MONGO_DB_NAME")
-	dbClientURI := os.Getenv("MONGO_DB_URI")
-	apiPort := os.Getenv("API_PORT")
-	clientOptions := options.Client().ApplyURI(dbClientURI)
-
-	ctx := context.TODO()
-	maskDBURI := MaskDBURI(dbClientURI)
+	ctx := context.Background()
+	clientOptions := options.Client().ApplyURI(cfg.MongoURI)
+	maskDBURI := MaskDBURI(cfg.MongoURI)
 	log.Printf("Connecting to MongoDB at %s...\n", maskDBURI)
 	client, err := mongo.Connect(ctx, clientOptions)
-
 	if err != nil {
-		log.Fatalf("Failed to connect to MongoDB: %v", err)
+		log.Fatalf("mongo connect: %v", err)
 	}
 	defer func() {
 		if err := client.Disconnect(ctx); err != nil {
-			log.Fatalf("Failed to disconnect MongoDB: %v", err)
+			log.Printf("mongo disconnect error: %v", err)
 		}
 	}()
-	err = client.Ping(ctx, nil)
-	if err != nil {
-		log.Fatalf("Failed to ping MongoDB: %v", err)
+	if err := client.Ping(ctx, nil); err != nil {
+		log.Fatalf("mongo ping: %v", err)
 	}
-	log.Println("Successfully connected to MongoDB!")
+	db := client.Database(cfg.MongoDB)
 
-	db := client.Database(dbName)
-
-	todoRepo := todoRepository.NewMongoTodoRepository(db)
-	todoUc := todoUsecase.NewTodoUseCase(todoRepo)
-	jwtSecret := os.Getenv("JWT_SECRET")
-	authRepo := authRepository.NewMemoryRepo()
-	tokenGen := &authRepository.JWTTokenGenerator{Secret: jwtSecret}
-	loginUc := authUsecase.NewLoginUsecase(authRepo, tokenGen)
-	registerUc := authUsecase.NewRegisterUsecase(authRepo)
-
-	log.Println("Starting Huma server on :" + apiPort + "...\n")
-	router := chi.NewRouter()
-	config := huma.DefaultConfig("Todo API", "1.0.0")
-	config.Components.SecuritySchemes = map[string]*huma.SecurityScheme{
-		"myAuth": {
-			Type:         "http",
-			Scheme:       "bearer",
-			BearerFormat: "JWT",
-		},
+	deps := server.Deps{
+		JWTSecret: cfg.JWTSecret,
+		AuthRepo:  authRepo.NewMemoryRepo(),
+		TokenGen:  &authRepo.JWTTokenGenerator{Secret: cfg.JWTSecret},
+		TodoRepo:  todoRepo.NewMongoTodoRepository(db),
 	}
-	api := humachi.New(router, config)
-	api.UseMiddleware(middleware.NewAuthMiddleware(api, []byte(jwtSecret)))
-	todoHttp.NewTodoHandler(api, todoUc)
-	authHttp.NewHandler(api, registerUc, loginUc)
 
-	if err := netHttp.ListenAndServe(":"+apiPort, router); err != nil {
-		log.Fatalf("Failed to start Huma server: %v", err)
+	h := server.NewRouter(deps)
+	log.Printf("Starting server on :%s", cfg.APIPort)
+	if err := netHttp.ListenAndServe(":"+cfg.APIPort, h); err != nil {
+		log.Fatalf("server error: %v", err)
 	}
 }
 
