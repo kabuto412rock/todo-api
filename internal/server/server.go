@@ -27,6 +27,8 @@ type Deps struct {
 // NewRouter creates http.Handler with routes registered.
 func NewRouter(d Deps) http.Handler {
 	r := chi.NewRouter()
+	// Top-level HTTP logger (can capture response body)
+	r.Use(middleware.HTTPLogger())
 	cfg := huma.DefaultConfig("Todo API", "1.0.0")
 	cfg.Components.SecuritySchemes = map[string]*huma.SecurityScheme{
 		"myAuth": {Type: "http", Scheme: "bearer", BearerFormat: "JWT"},
