@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"io"
 	"log/slog"
@@ -23,17 +24,17 @@ func HTTPLogger() func(next http.Handler) http.Handler {
 			// Request ID (reuse header or generate a new one)
 			requestID := r.Header.Get("X-Request-ID")
 			if requestID == "" {
-				requestID = uuid.NewString()
+				id := uuid.New()
+				requestID = base64.RawURLEncoding.EncodeToString(id[:])
 			}
-
 			// Read JSON request body (limit 1MB) & restore for handlers
-			var reqBodyPreview any
+			var reqBodyPreview string
 			if allowBody(r.Method) && isJSON(r.Header.Get("Content-Type")) && r.Body != nil {
 				raw, _ := io.ReadAll(io.LimitReader(r.Body, 1<<20)) // 1MB cap
 				r.Body.Close()
 				r.Body = io.NopCloser(bytes.NewBuffer(raw))
 				if len(raw) > 0 {
-					var js any
+					var js string
 					if err := json.Unmarshal(raw, &js); err == nil {
 						reqBodyPreview = js
 					} else {
@@ -48,19 +49,19 @@ func HTTPLogger() func(next http.Handler) http.Handler {
 
 			rec := &respRecorder{ResponseWriter: w, status: 200}
 
-			attrs := []any{"request_id", requestID, "method", r.Method, "path", r.URL.Path}
+			attrs := []any{"id", requestID, "method", r.Method, "path", r.URL.Path}
 			if r.URL.RawQuery != "" {
 				attrs = append(attrs, "query", r.URL.RawQuery)
 			}
-			if reqBodyPreview != nil {
-				attrs = append(attrs, "json_body", reqBodyPreview)
+			if len(reqBodyPreview) > 0 {
+				attrs = append(attrs, slog.String("json_body", reqBodyPreview))
 			}
-			slog.Info("http request started", attrs...)
+			slog.Info("http request", attrs...)
 
 			next.ServeHTTP(rec, r)
 
 			duration := time.Since(start)
-			endAttrs := []any{"request_id", requestID, "status", rec.status, "duration_ms", duration.Milliseconds()}
+			endAttrs := []any{"id", requestID, "status", rec.status, "duration_ms", duration.Milliseconds()}
 			if len(rec.body) > 0 && isJSON(rec.Header().Get("Content-Type")) {
 				snippet := rec.body
 				if len(snippet) > 1024 {
@@ -71,7 +72,7 @@ func HTTPLogger() func(next http.Handler) http.Handler {
 				}
 				endAttrs = append(endAttrs, "response_body", string(snippet))
 			}
-			slog.Info("http request finished", endAttrs...)
+			slog.Info("http request", endAttrs...)
 		})
 	}
 }
