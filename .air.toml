@@ -1,0 +1,27 @@
+root = "."
+testdata_dir = "testdata"
+tmp_dir = "tmp"
+
+[build]
+cmd = "sh -c 'mkdir -p ./bin && go build -o ./bin/todo-app ./cmd/main.go'"
+bin = "./bin/todo-app"
+delay = 500
+send_interrupt = true
+stop_on_error = true
+exclude_dir = ["bin", "tmp", "vendor", "testdata"]
+exclude_regex = ["_test\\.go$"]
+include_ext = ["go", "mod", "sum", "tpl", "tmpl", "html", "yaml", "yml", "json", "env"]
+follow_symlink = false
+poll = true
+poll_interval = 1000
+rerun = false
+
+[log]
+time = true
+
+[misc]
+clean_on_exit = true
+
+[screen]
+clear_on_rebuild = false
+keep_scroll = true

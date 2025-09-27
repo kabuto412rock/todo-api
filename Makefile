@@ -1,10 +1,10 @@
-# Makefile for Go Todo App
+SHELL := /bin/sh
 
-APP_NAME=todo-app
-CMD_DIR=./cmd
-BIN_DIR=bin
+APP_NAME := todo-app
+CMD_DIR  := ./cmd
+BIN_DIR  := bin
 
-.PHONY: all build run test clean fmt vet
+.PHONY: all build run test fmt vet clean dev
 
 all: build
 
@@ -12,8 +12,10 @@ build:
 	mkdir -p $(BIN_DIR)
 	go build -o $(BIN_DIR)/$(APP_NAME) $(CMD_DIR)/main.go
 
-run: build
-	./$(BIN_DIR)/$(APP_NAME)
+run:
+	air -c .air.toml
+
+dev: fmt vet test run
 
 test:
 	go test ./...
@@ -26,3 +28,4 @@ vet:
 
 clean:
 	rm -f $(BIN_DIR)/$(APP_NAME)
+	rm -rf tmp
