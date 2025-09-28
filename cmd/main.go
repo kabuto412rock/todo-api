@@ -38,9 +38,18 @@ func main() {
 	}
 	db := client.Database(cfg.MongoDB)
 
+	// Select auth repository implementation based on config
+	var authRepository = authRepo.NewMemoryRepo()
+	if cfg.AuthRepo == "mongo" {
+		authRepository = authRepo.NewMongoAuthRepository(db)
+		log.Printf("Auth repository: mongo (db=%s)", cfg.MongoDB)
+	} else {
+		log.Printf("Auth repository: memory")
+	}
+
 	deps := server.Deps{
 		JWTSecret: cfg.JWTSecret,
-		AuthRepo:  authRepo.NewMemoryRepo(),
+		AuthRepo:  authRepository,
 		TokenGen:  &authRepo.JWTTokenGenerator{Secret: cfg.JWTSecret},
 		TodoRepo:  todoRepo.NewMongoTodoRepository(db),
 	}

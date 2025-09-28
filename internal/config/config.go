@@ -10,6 +10,7 @@ type Config struct {
 	MongoURI      string
 	MongoDB       string
 	JWTSecret     string
+	AuthRepo      string // "memory" or "mongo"
 }
 
 func Load() Config {
@@ -18,6 +19,7 @@ func Load() Config {
 		MongoURI:      must("MONGO_DB_URI"),
 		MongoDB:       must("MONGO_DB_NAME"),
 		JWTSecret:     must("JWT_SECRET"),
+		AuthRepo:      getOr("AUTH_REPO", "memory"),
 	}
 }
 

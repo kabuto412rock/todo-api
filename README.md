@@ -15,6 +15,16 @@ Create a `.env` file at the project root and set the following variables:
 cp .env.example .env
 ```
 
+Required variables:
+
+- MONGO_DB_URI: MongoDB connection string
+- MONGO_DB_NAME: Database name
+- JWT_SECRET: Secret for signing JWT tokens
+- SERVER_ADDRESS (optional): Defaults to localhost:8080
+- AUTH_REPO (optional): memory (default) or mongo
+
+To persist auth users to MongoDB, set `AUTH_REPO=mongo`. Users will be stored in the `auth_users` collection with a unique index on the `username` field.
+
 ## Installation
 ```bash
 go mod tidy
