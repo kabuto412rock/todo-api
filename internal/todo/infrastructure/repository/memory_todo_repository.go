@@ -24,7 +24,7 @@ func (r *MemoryTodoRepository) Save(todo *domain.Todo) error {
 	if todo.DueDate.IsZero() {
 		// keep same semantics; just allow empty
 	}
-	r.items[todo.ID] = &domain.Todo{ID: todo.ID, Title: todo.Title, DueDate: todo.DueDate}
+	r.items[todo.ID] = &domain.Todo{ID: todo.ID, Title: todo.Title, DueDate: todo.DueDate, Done: todo.Done}
 	return nil
 }
 
@@ -68,7 +68,7 @@ func (r *MemoryTodoRepository) UpdateByID(todo *domain.Todo) error {
 	if _, ok := r.items[todo.ID]; !ok {
 		return nil
 	}
-	r.items[todo.ID] = &domain.Todo{ID: todo.ID, Title: todo.Title, DueDate: todo.DueDate}
+	r.items[todo.ID] = &domain.Todo{ID: todo.ID, Title: todo.Title, DueDate: todo.DueDate, Done: todo.Done}
 	return nil
 }
 

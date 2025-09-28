@@ -57,7 +57,7 @@ func NewTodoHandler(api huma.API, uc *usecase.TodoUseCase) {
 }
 
 func (h *TodoHandler) Create(ctx context.Context, input *CreateTodoInput) (*CreateTodoOutput, error) {
-	err := h.uc.CreateTodo(input.Body.Title, input.Body.DueDate)
+	err := h.uc.CreateTodo(input.Body.Title, input.Body.DueDate, input.Body.Done)
 	if err != nil {
 		return nil, huma.Error400BadRequest("Failed to create todo", err)
 	}
@@ -100,7 +100,7 @@ func (h *TodoHandler) DeleteByID(ctx context.Context, input *struct {
 }
 
 func (h *TodoHandler) UpdateByID(ctx context.Context, input *UpdateTodoInput) (*UpdateTodoOutput, error) {
-	err := h.uc.UpdateTodo(input.ID, input.Body.Title, input.Body.DueDate)
+	err := h.uc.UpdateTodo(input.ID, input.Body.Title, input.Body.DueDate, input.Body.Done)
 	if err != nil {
 		return nil, err
 	}

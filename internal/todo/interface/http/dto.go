@@ -6,14 +6,16 @@ type (
 	CreateTodoInput struct {
 		Body struct {
 			Title   string `json:"title" doc:"Title of the todo item" example:"Buy groceries"`
-			DueDate string `json:"due_date" doc:"Due date for the todo item" example:"2023-10-01"`
+			DueDate string `json:"dueDate" doc:"Due date for the todo item" example:"2023-10-01"`
+			Done    bool   `json:"done" doc:"Completion status of the todo item" example:"false"`
 		}
 	}
 	UpdateTodoInput struct {
 		ID   string `path:"id" doc:"ID of the todo item"`
 		Body struct {
 			Title   string `json:"title" doc:"Title of the todo item" example:"Buy groceries"`
-			DueDate string `json:"due_date" doc:"Due date for the todo item" example:"2023-10-01"`
+			DueDate string `json:"dueDate" doc:"Due date for the todo item" example:"2023-10-01"`
+			Done    bool   `json:"done" doc:"Completion status of the todo item" example:"false"`
 		}
 	}
 )

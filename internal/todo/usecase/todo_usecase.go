@@ -17,7 +17,7 @@ func NewTodoUseCase(repo domain.TodoRepository) *TodoUseCase {
 	}
 }
 
-func (uc *TodoUseCase) CreateTodo(title string, dueDate string) error {
+func (uc *TodoUseCase) CreateTodo(title string, dueDate string, done bool) error {
 	// 處理業務邏輯
 	// 注意: UseCase 不知道資料從哪裡來，也不管要存去哪裡
 	dueTime := parseDate(dueDate)
@@ -25,6 +25,7 @@ func (uc *TodoUseCase) CreateTodo(title string, dueDate string) error {
 		ID:      generateID(),
 		Title:   title,
 		DueDate: dueTime,
+		Done:    done,
 	}
 	return uc.repo.Save(todo)
 }
@@ -45,12 +46,13 @@ func (uc *TodoUseCase) GetTodoByID(id string) (*domain.Todo, error) {
 	return todo, nil
 }
 
-func (uc *TodoUseCase) UpdateTodo(id string, title, dueDate string) error {
+func (uc *TodoUseCase) UpdateTodo(id string, title, dueDate string, done bool) error {
 	dueTime := parseDate(dueDate)
 	todo := &domain.Todo{
 		ID:      id,
 		Title:   title,
 		DueDate: dueTime,
+		Done:    done,
 	}
 	return uc.repo.UpdateByID(todo)
 }

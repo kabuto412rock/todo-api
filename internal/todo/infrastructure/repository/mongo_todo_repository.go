@@ -29,6 +29,7 @@ func (r *MongoTodoRepository) Save(todo *domain.Todo) error {
 		"_id":       todo.ID,
 		"title":     todo.Title,
 		"dueDate":   todo.DueDate,
+		"done":      todo.Done,
 		"createdAt": time.Now(),
 		"updatedAt": time.Now(),
 	})
@@ -53,6 +54,7 @@ func (r *MongoTodoRepository) FindAll() ([]*domain.Todo, error) {
 			ID      string    `bson:"_id"`
 			Title   string    `bson:"title"`
 			DueDate time.Time `bson:"dueDate"`
+			Done    bool      `bson:"done"`
 		}
 		if err := cursor.Decode(&item); err != nil {
 			return nil, err
@@ -61,6 +63,7 @@ func (r *MongoTodoRepository) FindAll() ([]*domain.Todo, error) {
 			ID:      item.ID,
 			Title:   item.Title,
 			DueDate: item.DueDate,
+			Done:    item.Done,
 		})
 	}
 	return todos, nil
@@ -88,6 +91,7 @@ func (r *MongoTodoRepository) FindByID(id string) (*domain.Todo, error) {
 		ID      string    `bson:"_id"`
 		Title   string    `bson:"title"`
 		DueDate time.Time `bson:"dueDate"`
+		Done    bool      `bson:"done"`
 	}
 	err := r.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&item)
 	if err != nil {
@@ -100,6 +104,7 @@ func (r *MongoTodoRepository) FindByID(id string) (*domain.Todo, error) {
 		ID:      item.ID,
 		Title:   item.Title,
 		DueDate: item.DueDate,
+		Done:    item.Done,
 	}, nil
 }
 
@@ -112,6 +117,7 @@ func (r *MongoTodoRepository) UpdateByID(todo *domain.Todo) error {
 			"title":     todo.Title,
 			"dueDate":   todo.DueDate,
 			"updatedAt": time.Now(),
+			"done":      todo.Done,
 		},
 	})
 	if err == mongo.ErrNoDocuments {

@@ -56,13 +56,14 @@ func TestCreateTodo(t *testing.T) {
 	title := "Learn Clean Architecture"
 	dueDate := "2025-07-01"
 
-	err := uc.CreateTodo(title, dueDate)
+	err := uc.CreateTodo(title, dueDate, false)
 	assert.NoError(t, err)
 
 	todos, err := uc.GetAllTodos()
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(todos))
 	assert.Equal(t, title, todos[0].Title)
+	assert.Equal(t, false, todos[0].Done)
 
 	parsedDue, err := time.Parse("2006-01-02", dueDate)
 	assert.NoError(t, err)
@@ -85,7 +86,7 @@ func TestDeleteTodo(t *testing.T) {
 	// Create a todo to delete
 	title := "Learn Clean Architecture"
 	dueDate := "2025-07-01"
-	err := uc.CreateTodo(title, dueDate)
+	err := uc.CreateTodo(title, dueDate, false)
 	assert.NoError(t, err)
 
 	todos, err := uc.GetAllTodos()
@@ -109,7 +110,8 @@ func TestGetTodoByID(t *testing.T) {
 	// Create a todo to find
 	title := "Learn Clean Architecture"
 	dueDate := "2025-07-01"
-	err := uc.CreateTodo(title, dueDate)
+	done := true
+	err := uc.CreateTodo(title, dueDate, done)
 	assert.NoError(t, err)
 
 	todos, err := uc.GetAllTodos()
@@ -121,6 +123,7 @@ func TestGetTodoByID(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, foundTodo)
 	assert.Equal(t, title, foundTodo.Title)
+	assert.Equal(t, done, foundTodo.Done)
 }
 
 func TestUpdateTodo(t *testing.T) {
@@ -130,20 +133,22 @@ func TestUpdateTodo(t *testing.T) {
 	// Create a todo to update
 	title := "Learn Clean Architecture"
 	dueDate := "2025-07-01"
-	err := uc.CreateTodo(title, dueDate)
+	done := false
+	err := uc.CreateTodo(title, dueDate, done)
 	assert.NoError(t, err)
 
 	todos, err := uc.GetAllTodos()
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(todos))
-
+	assert.Equal(t, false, todos[0].Done)
 	// Update the todo
 	todos[0].Title = "Learn Clean Architecture Updated"
-	err = uc.UpdateTodo(todos[0].ID, todos[0].Title, todos[0].DueDate.Format("2006-01-02"))
+	err = uc.UpdateTodo(todos[0].ID, todos[0].Title, todos[0].DueDate.Format("2006-01-02"), true)
 	assert.NoError(t, err)
 
 	// Verify the todo is updated
 	updatedTodo, err := uc.GetTodoByID(todos[0].ID)
 	assert.NoError(t, err)
 	assert.Equal(t, "Learn Clean Architecture Updated", updatedTodo.Title)
+	assert.Equal(t, true, updatedTodo.Done)
 }
