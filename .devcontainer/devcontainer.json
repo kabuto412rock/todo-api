@@ -15,10 +15,11 @@
                 "gopls": {
                     "ui.semanticTokens": true
                 },
-                "go.toolsManagement.checkForUpdates": "local"
+                "go.toolsManagement.checkForUpdates": "local",
+                "terminal.integrated.defaultProfile.linux": "bash"
             }
         }
     },
-    "postCreateCommand": "go mod tidy", // Run after container is created
+    "postCreateCommand": "bash -lc 'set -e; go install github.com/air-verse/air@latest; go mod tidy'",
     "remoteUser": "root"
 }
