@@ -46,8 +46,8 @@ func main() {
 	}
 
 	h := server.NewRouter(deps)
-	log.Printf("Starting server on :%s", cfg.APIPort)
-	if err := netHttp.ListenAndServe(":"+cfg.APIPort, h); err != nil {
+	log.Printf("Starting server on %s", cfg.ServerAddress)
+	if err := netHttp.ListenAndServe(cfg.ServerAddress, h); err != nil {
 		log.Fatalf("server error: %v", err)
 	}
 }

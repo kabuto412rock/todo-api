@@ -6,18 +6,18 @@ import (
 )
 
 type Config struct {
-	APIPort   string
-	MongoURI  string
-	MongoDB   string
-	JWTSecret string
+	ServerAddress string
+	MongoURI      string
+	MongoDB       string
+	JWTSecret     string
 }
 
 func Load() Config {
 	return Config{
-		APIPort:   getOr("API_PORT", "8080"),
-		MongoURI:  must("MONGO_DB_URI"),
-		MongoDB:   must("MONGO_DB_NAME"),
-		JWTSecret: must("JWT_SECRET"),
+		ServerAddress: getOr("SERVER_ADDRESS", "localhost:8080"),
+		MongoURI:      must("MONGO_DB_URI"),
+		MongoDB:       must("MONGO_DB_NAME"),
+		JWTSecret:     must("JWT_SECRET"),
 	}
 }
 
