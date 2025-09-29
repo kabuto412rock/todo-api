@@ -1,21 +1,24 @@
 package http
 
-import "todo-app/internal/todo/domain"
+import (
+	"time"
+	"todo-app/internal/todo/domain"
+)
 
 type (
 	CreateTodoInput struct {
 		Body struct {
-			Title   string `json:"title" doc:"Title of the todo item" example:"Buy groceries"`
-			DueDate string `json:"dueDate" doc:"Due date for the todo item" example:"2023-10-01"`
-			Done    bool   `json:"done" doc:"Completion status of the todo item" example:"false"`
+			Title   string    `json:"title" doc:"Title of the todo item" example:"Buy groceries"`
+			DueDate time.Time `json:"dueDate" doc:"Due date for the todo item" example:"2023-10-10T10:00:00Z"`
+			Done    bool      `json:"done" doc:"Completion status of the todo item" example:"false"`
 		}
 	}
 	UpdateTodoInput struct {
 		ID   string `path:"id" doc:"ID of the todo item"`
 		Body struct {
-			Title   string `json:"title" doc:"Title of the todo item" example:"Buy groceries"`
-			DueDate string `json:"dueDate" doc:"Due date for the todo item" example:"2023-10-01"`
-			Done    bool   `json:"done" doc:"Completion status of the todo item" example:"false"`
+			Title   string    `json:"title" doc:"Title of the todo item" example:"Buy groceries"`
+			DueDate time.Time `json:"dueDate" doc:"Due date for the todo item" example:"2023-10-10T10:00:00Z"`
+			Done    bool      `json:"done" doc:"Completion status of the todo item" example:"false"`
 		}
 	}
 )
