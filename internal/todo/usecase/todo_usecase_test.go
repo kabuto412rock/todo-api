@@ -54,7 +54,7 @@ func TestCreateTodo(t *testing.T) {
 	uc := NewTodoUseCase(repo)
 
 	title := "Learn Clean Architecture"
-	dueDate := "2025-07-01"
+	dueDate := parseDate("2025-07-01")
 
 	err := uc.CreateTodo(title, dueDate, false)
 	assert.NoError(t, err)
@@ -65,9 +65,8 @@ func TestCreateTodo(t *testing.T) {
 	assert.Equal(t, title, todos[0].Title)
 	assert.Equal(t, false, todos[0].Done)
 
-	parsedDue, err := time.Parse("2006-01-02", dueDate)
 	assert.NoError(t, err)
-	assert.Equal(t, parsedDue.Format("2006-01-02"), todos[0].DueDate.Format("2006-01-02"))
+	assert.Equal(t, dueDate, todos[0].DueDate)
 }
 
 func TestGetAllTodos(t *testing.T) {
@@ -85,7 +84,7 @@ func TestDeleteTodo(t *testing.T) {
 
 	// Create a todo to delete
 	title := "Learn Clean Architecture"
-	dueDate := "2025-07-01"
+	dueDate := parseDate("2025-07-01")
 	err := uc.CreateTodo(title, dueDate, false)
 	assert.NoError(t, err)
 
@@ -109,7 +108,7 @@ func TestGetTodoByID(t *testing.T) {
 
 	// Create a todo to find
 	title := "Learn Clean Architecture"
-	dueDate := "2025-07-01"
+	dueDate := parseDate("2025-07-01")
 	done := true
 	err := uc.CreateTodo(title, dueDate, done)
 	assert.NoError(t, err)
@@ -132,7 +131,7 @@ func TestUpdateTodo(t *testing.T) {
 
 	// Create a todo to update
 	title := "Learn Clean Architecture"
-	dueDate := "2025-07-01"
+	dueDate := parseDate("2025-07-01")
 	done := false
 	err := uc.CreateTodo(title, dueDate, done)
 	assert.NoError(t, err)
@@ -143,7 +142,7 @@ func TestUpdateTodo(t *testing.T) {
 	assert.Equal(t, false, todos[0].Done)
 	// Update the todo
 	todos[0].Title = "Learn Clean Architecture Updated"
-	err = uc.UpdateTodo(todos[0].ID, todos[0].Title, todos[0].DueDate.Format("2006-01-02"), true)
+	err = uc.UpdateTodo(todos[0].ID, todos[0].Title, todos[0].DueDate, true)
 	assert.NoError(t, err)
 
 	// Verify the todo is updated
@@ -151,4 +150,8 @@ func TestUpdateTodo(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "Learn Clean Architecture Updated", updatedTodo.Title)
 	assert.Equal(t, true, updatedTodo.Done)
+}
+func parseDate(dateStr string) time.Time {
+	t, _ := time.Parse("2006-01-02", dateStr)
+	return t
 }
