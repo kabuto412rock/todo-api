@@ -2,6 +2,8 @@ package http
 
 import (
 	"context"
+	"fmt"
+	"time"
 	"todo-app/internal/auth/usecase"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -17,6 +19,8 @@ func NewHandler(api huma.API, reg usecase.RegisterUsecase, login usecase.LoginUs
 
 	huma.Post(api, "/auth/register", h.Register)
 	huma.Post(api, "/auth/login", h.Login)
+
+	huma.Get(api, "/healthz", Healthz)
 }
 
 type authInput struct {
@@ -34,6 +38,42 @@ type registerOutput struct {
 	Body struct {
 		Message string `json:"message"`
 	}
+}
+
+type healthzOutput struct {
+	Body struct {
+		Message string `json:"message"`
+	}
+}
+
+func Healthz(ctx context.Context, in *struct{}) (*healthzOutput, error) {
+	result := &healthzOutput{}
+
+	timeCtx, cancel := context.WithTimeout(ctx, time.Second*5)
+	defer func() {
+		cancel()
+		fmt.Println("defer: Healthz check finished")
+	}()
+
+	go func(timeCtx context.Context) {
+		i := 0
+		for {
+			select {
+			case <-timeCtx.Done():
+				fmt.Println("Healthz check timed out")
+				return
+			default:
+				fmt.Printf("Healthz check is healthy %d\n", i+1)
+				time.Sleep(time.Second)
+			}
+			i++
+		}
+	}(timeCtx)
+
+	<-timeCtx.Done()
+	fmt.Println("Healthz check context done:", timeCtx.Err())
+	result.Body.Message = "OK"
+	return result, nil
 }
 
 func (h *handler) Register(ctx context.Context, in *authInput) (*registerOutput, error) {
