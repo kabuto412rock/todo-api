@@ -28,7 +28,7 @@ func (r *MemoryTodoRepository) Save(todo *domain.Todo) error {
 	return nil
 }
 
-func (r *MemoryTodoRepository) FindAll() ([]*domain.Todo, error) {
+func (r *MemoryTodoRepository) FindAll(page, limit int) (list []*domain.Todo, total int64, err error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	res := make([]*domain.Todo, 0, len(r.items))
@@ -36,9 +36,21 @@ func (r *MemoryTodoRepository) FindAll() ([]*domain.Todo, error) {
 		copy := *v
 		res = append(res, &copy)
 	}
+	if page < 0 || limit <= 0 {
+		return []*domain.Todo{}, int64(len(r.items)), nil
+	}
+	start := page * limit
+	if start >= len(res) {
+		return []*domain.Todo{}, int64(len(r.items)), nil
+	}
+	end := start + limit
+	if end > len(res) {
+		end = len(res)
+	}
+	res = res[start:end]
 	// stable order just by ID for determinism
 	sort.Slice(res, func(i, j int) bool { return res[i].ID < res[j].ID })
-	return res, nil
+	return res, int64(len(r.items)), nil
 }
 
 func (r *MemoryTodoRepository) DeleteByID(id string) error {
