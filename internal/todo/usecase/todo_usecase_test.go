@@ -1,69 +1,15 @@
 package usecase
 
 import (
-	"fmt"
 	"testing"
 	"time"
-	"todo-app/internal/todo/domain"
+	"todo-app/internal/todo/infrastructure/repository"
 
 	"github.com/stretchr/testify/assert"
 )
 
-type mockTodoRepository struct {
-	stored []*domain.Todo
-}
-
-func (m *mockTodoRepository) Save(todo *domain.Todo) error {
-	m.stored = append(m.stored, todo)
-	return nil
-}
-
-func (m *mockTodoRepository) FindAll(page, limit int) (list []*domain.Todo, total int64, err error) {
-	total = int64(len(m.stored))
-	if page < 0 || limit <= 0 {
-		return []*domain.Todo{}, total, nil
-	}
-	start := page * limit
-	if start >= len(m.stored) {
-		return []*domain.Todo{}, total, nil
-	}
-	end := start + limit
-	if end > len(m.stored) {
-		end = len(m.stored)
-	}
-	return m.stored[start:end], total, nil
-}
-
-func (m *mockTodoRepository) DeleteByID(id string) error {
-	for i, todo := range m.stored {
-		if todo.ID == id {
-			m.stored = append(m.stored[:i], m.stored[i+1:]...)
-			return nil
-		}
-	}
-	return nil // or an error if not found
-}
-
-func (m *mockTodoRepository) FindByID(id string) (*domain.Todo, error) {
-	for _, todo := range m.stored {
-		if todo.ID == id {
-			return todo, nil
-		}
-	}
-	return nil, fmt.Errorf("todo with ID %s not found", id)
-}
-
-func (m *mockTodoRepository) UpdateByID(todo *domain.Todo) error {
-	for i, existingTodo := range m.stored {
-		if existingTodo.ID == todo.ID {
-			m.stored[i] = todo
-			return nil
-		}
-	}
-	return fmt.Errorf("todo with ID %s not found", todo.ID)
-}
 func TestCreateTodo(t *testing.T) {
-	repo := &mockTodoRepository{}
+	repo := repository.NewMemoryTodoRepository()
 	uc := NewTodoUseCase(repo)
 
 	title := "Learn Clean Architecture"
@@ -72,7 +18,7 @@ func TestCreateTodo(t *testing.T) {
 	err := uc.CreateTodo(title, dueDate, false)
 	assert.NoError(t, err)
 
-	todos, total, err := uc.GetAllTodos(0, 10)
+	todos, total, err := uc.GetAllTodos(0, 10, "")
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(todos))
 	assert.Equal(t, int64(1), total)
@@ -84,10 +30,10 @@ func TestCreateTodo(t *testing.T) {
 }
 
 func TestGetAllTodos(t *testing.T) {
-	repo := &mockTodoRepository{}
+	repo := repository.NewMemoryTodoRepository()
 	uc := NewTodoUseCase(repo)
 
-	todos, total, err := uc.GetAllTodos(0, 10)
+	todos, total, err := uc.GetAllTodos(0, 10, "")
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(todos))
 	assert.Equal(t, int64(0), total)
@@ -95,7 +41,7 @@ func TestGetAllTodos(t *testing.T) {
 	title := "Learn Clean Architecture"
 	dueDate := parseDate("2025-07-01")
 	uc.CreateTodo(title, dueDate, false)
-	todos, total, err = uc.GetAllTodos(0, 10)
+	todos, total, err = uc.GetAllTodos(0, 10, "")
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(todos))
 	assert.Equal(t, int64(1), total)
@@ -103,14 +49,23 @@ func TestGetAllTodos(t *testing.T) {
 	assert.Equal(t, false, todos[0].Done)
 	assert.Equal(t, dueDate, todos[0].DueDate)
 
-	todos, total, err = uc.GetAllTodos(1, 10)
+	todos, total, err = uc.GetAllTodos(1, 10, "")
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(todos))
+	assert.Equal(t, int64(1), total)
+	todos, total, err = uc.GetAllTodos(0, 10, "NonExistingTitle")
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(todos))
+	assert.Equal(t, int64(0), total)
+
+	todos, total, err = uc.GetAllTodos(0, 10, "Clean")
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(todos))
 	assert.Equal(t, int64(1), total)
 }
 
 func TestDeleteTodo(t *testing.T) {
-	repo := &mockTodoRepository{}
+	repo := repository.NewMemoryTodoRepository()
 	uc := NewTodoUseCase(repo)
 
 	// Create a todo to delete
@@ -119,7 +74,7 @@ func TestDeleteTodo(t *testing.T) {
 	err := uc.CreateTodo(title, dueDate, false)
 	assert.NoError(t, err)
 
-	todos, total, err := uc.GetAllTodos(0, 10)
+	todos, total, err := uc.GetAllTodos(0, 10, "")
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(todos))
 	assert.Equal(t, int64(1), total)
@@ -129,14 +84,14 @@ func TestDeleteTodo(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Verify the todo is deleted
-	todos, total, err = uc.GetAllTodos(0, 10)
+	todos, total, err = uc.GetAllTodos(0, 10, "")
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(todos))
 	assert.Equal(t, int64(0), total)
 }
 
 func TestGetTodoByID(t *testing.T) {
-	repo := &mockTodoRepository{}
+	repo := repository.NewMemoryTodoRepository()
 	uc := NewTodoUseCase(repo)
 
 	// Create a todo to find
@@ -146,7 +101,7 @@ func TestGetTodoByID(t *testing.T) {
 	err := uc.CreateTodo(title, dueDate, done)
 	assert.NoError(t, err)
 
-	todos, total, err := uc.GetAllTodos(0, 10)
+	todos, total, err := uc.GetAllTodos(0, 10, "")
 
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(todos))
@@ -161,7 +116,7 @@ func TestGetTodoByID(t *testing.T) {
 }
 
 func TestUpdateTodo(t *testing.T) {
-	repo := &mockTodoRepository{}
+	repo := repository.NewMemoryTodoRepository()
 	uc := NewTodoUseCase(repo)
 
 	// Create a todo to update
@@ -171,7 +126,7 @@ func TestUpdateTodo(t *testing.T) {
 	err := uc.CreateTodo(title, dueDate, done)
 	assert.NoError(t, err)
 
-	todos, total, err := uc.GetAllTodos(0, 10)
+	todos, total, err := uc.GetAllTodos(0, 10, "")
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(todos))
 	assert.Equal(t, false, todos[0].Done)

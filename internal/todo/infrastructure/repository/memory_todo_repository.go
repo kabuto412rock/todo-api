@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 	"todo-app/internal/todo/domain"
@@ -28,20 +29,23 @@ func (r *MemoryTodoRepository) Save(todo *domain.Todo) error {
 	return nil
 }
 
-func (r *MemoryTodoRepository) FindAll(page, limit int) (list []*domain.Todo, total int64, err error) {
+func (r *MemoryTodoRepository) FindAll(page, limit int, title string) (list []*domain.Todo, total int64, err error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	res := make([]*domain.Todo, 0, len(r.items))
+	res := make([]*domain.Todo, 0)
 	for _, v := range r.items {
+		if title != "" && !strings.Contains(v.Title, title) {
+			continue
+		}
 		copy := *v
 		res = append(res, &copy)
 	}
 	if page < 0 || limit <= 0 {
-		return []*domain.Todo{}, int64(len(r.items)), nil
+		return []*domain.Todo{}, int64(len(res)), nil
 	}
 	start := page * limit
 	if start >= len(res) {
-		return []*domain.Todo{}, int64(len(r.items)), nil
+		return []*domain.Todo{}, int64(len(res)), nil
 	}
 	end := start + limit
 	if end > len(res) {
@@ -50,7 +54,7 @@ func (r *MemoryTodoRepository) FindAll(page, limit int) (list []*domain.Todo, to
 	res = res[start:end]
 	// stable order just by ID for determinism
 	sort.Slice(res, func(i, j int) bool { return res[i].ID < res[j].ID })
-	return res, int64(len(r.items)), nil
+	return res, int64(len(res)), nil
 }
 
 func (r *MemoryTodoRepository) DeleteByID(id string) error {

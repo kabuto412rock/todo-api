@@ -12,6 +12,7 @@ type (
 	}
 	ListTodosInput struct {
 		ListQueryParams
+		Title string `query:"title" doc:"Filter todos by title" example:"groceries"`
 	}
 	CreateTodoInput struct {
 		Body struct {

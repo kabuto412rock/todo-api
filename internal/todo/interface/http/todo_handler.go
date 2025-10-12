@@ -66,7 +66,7 @@ func (h *TodoHandler) Create(ctx context.Context, input *CreateTodoInput) (*Crea
 	return resp, nil
 }
 func (h *TodoHandler) List(ctx context.Context, input *ListTodosInput) (*ListTodosOutput, error) {
-	todos, total, err := h.uc.GetAllTodos(input.Page, input.Limit)
+	todos, total, err := h.uc.GetAllTodos(input.Page, input.Limit, input.Title)
 	if err != nil {
 		return nil, err
 	}

@@ -36,10 +36,13 @@ func (r *MongoTodoRepository) Save(todo *domain.Todo) error {
 	return err
 }
 
-func (r *MongoTodoRepository) FindAll(page, limit int) (list []*domain.Todo, total int64, err error) {
+func (r *MongoTodoRepository) FindAll(page, limit int, title string) (list []*domain.Todo, total int64, err error) {
 	skip := int64(page * limit)
 	qLimit := int64(limit)
 	filter := bson.M{}
+	if title != "" {
+		filter["title"] = bson.M{"$regex": title, "$options": "i"}
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	cursor, err := r.collection.Find(ctx, filter, &options.FindOptions{
