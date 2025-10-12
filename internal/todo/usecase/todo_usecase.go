@@ -29,8 +29,8 @@ func (uc *TodoUseCase) CreateTodo(title string, dueTime time.Time, done bool) er
 	return uc.repo.Save(todo)
 }
 
-func (uc *TodoUseCase) GetAllTodos(page, limit int) (list []*domain.Todo, total int64, err error) {
-	return uc.repo.FindAll(page, limit)
+func (uc *TodoUseCase) GetAllTodos(page, limit int, title string) (list []*domain.Todo, total int64, err error) {
+	return uc.repo.FindAll(page, limit, title)
 }
 
 func (uc *TodoUseCase) DeleteTodo(id string) error {
