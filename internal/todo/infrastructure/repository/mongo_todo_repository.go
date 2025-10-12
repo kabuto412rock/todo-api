@@ -36,17 +36,28 @@ func (r *MongoTodoRepository) Save(todo *domain.Todo) error {
 	return err
 }
 
-func (r *MongoTodoRepository) FindAll() ([]*domain.Todo, error) {
+func (r *MongoTodoRepository) FindAll(page, limit int) (list []*domain.Todo, total int64, err error) {
+	skip := int64(page * limit)
+	qLimit := int64(limit)
+	filter := bson.M{}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
-	cursor, err := r.collection.Find(ctx, bson.M{}, &options.FindOptions{
-		Sort: bson.D{{Key: "createdAt", Value: -1}}, // Sort by createdAt in descending order
+	cursor, err := r.collection.Find(ctx, filter, &options.FindOptions{
+		Sort:  bson.D{{Key: "createdAt", Value: -1}}, // Sort by createdAt in descending order
+		Skip:  &skip,
+		Limit: &qLimit,
 	})
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer cursor.Close(ctx)
+
+	ctx2, cancel2 := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel2()
+	total, err = r.collection.CountDocuments(ctx2, filter)
+	if err != nil {
+		return nil, 0, err
+	}
 
 	var todos []*domain.Todo
 	for cursor.Next(ctx) {
@@ -57,7 +68,7 @@ func (r *MongoTodoRepository) FindAll() ([]*domain.Todo, error) {
 			Done    bool      `bson:"done"`
 		}
 		if err := cursor.Decode(&item); err != nil {
-			return nil, err
+			return nil, total, err
 		}
 		todos = append(todos, &domain.Todo{
 			ID:      item.ID,
@@ -66,7 +77,7 @@ func (r *MongoTodoRepository) FindAll() ([]*domain.Todo, error) {
 			Done:    item.Done,
 		})
 	}
-	return todos, nil
+	return todos, total, nil
 }
 
 func (r *MongoTodoRepository) DeleteByID(id string) error {

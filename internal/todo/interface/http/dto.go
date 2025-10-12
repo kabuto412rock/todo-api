@@ -6,6 +6,13 @@ import (
 )
 
 type (
+	ListQueryParams struct {
+		Page  int `query:"page" doc:"Page number for pagination" example:"0"`
+		Limit int `query:"limit" doc:"Number of items per page" example:"10"`
+	}
+	ListTodosInput struct {
+		ListQueryParams
+	}
 	CreateTodoInput struct {
 		Body struct {
 			Title   string    `json:"title" doc:"Title of the todo item" example:"Buy groceries"`
@@ -24,6 +31,11 @@ type (
 )
 
 type (
+	ListResponseMeta struct {
+		Page  int   `json:"page" example:"0" doc:"Current page number"`
+		Limit int   `json:"limit" example:"10" doc:"Number of items per page"`
+		Total int64 `json:"total" example:"100" doc:"Total number of items"`
+	}
 	CreateTodoOutput struct {
 		Body struct {
 			Message string `json:"message" example:"Todo item created successfully" doc:"Confirmation message"`
@@ -31,7 +43,8 @@ type (
 	}
 	ListTodosOutput struct {
 		Body struct {
-			Todos []*domain.Todo `json:"todos" doc:"List of todo items"`
+			Data []*domain.Todo   `json:"data" doc:"List of todo items"`
+			Meta ListResponseMeta `json:"meta" doc:"Pagination metadata"`
 		}
 	}
 

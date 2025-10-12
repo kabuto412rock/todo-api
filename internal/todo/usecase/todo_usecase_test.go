@@ -18,9 +18,22 @@ func (m *mockTodoRepository) Save(todo *domain.Todo) error {
 	return nil
 }
 
-func (m *mockTodoRepository) FindAll() ([]*domain.Todo, error) {
-	return m.stored, nil
+func (m *mockTodoRepository) FindAll(page, limit int) (list []*domain.Todo, total int64, err error) {
+	total = int64(len(m.stored))
+	if page < 0 || limit <= 0 {
+		return []*domain.Todo{}, total, nil
+	}
+	start := page * limit
+	if start >= len(m.stored) {
+		return []*domain.Todo{}, total, nil
+	}
+	end := start + limit
+	if end > len(m.stored) {
+		end = len(m.stored)
+	}
+	return m.stored[start:end], total, nil
 }
+
 func (m *mockTodoRepository) DeleteByID(id string) error {
 	for i, todo := range m.stored {
 		if todo.ID == id {
@@ -59,9 +72,10 @@ func TestCreateTodo(t *testing.T) {
 	err := uc.CreateTodo(title, dueDate, false)
 	assert.NoError(t, err)
 
-	todos, err := uc.GetAllTodos()
+	todos, total, err := uc.GetAllTodos(0, 10)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(todos))
+	assert.Equal(t, int64(1), total)
 	assert.Equal(t, title, todos[0].Title)
 	assert.Equal(t, false, todos[0].Done)
 
@@ -73,9 +87,26 @@ func TestGetAllTodos(t *testing.T) {
 	repo := &mockTodoRepository{}
 	uc := NewTodoUseCase(repo)
 
-	todos, err := uc.GetAllTodos()
+	todos, total, err := uc.GetAllTodos(0, 10)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(todos))
+	assert.Equal(t, int64(0), total)
+
+	title := "Learn Clean Architecture"
+	dueDate := parseDate("2025-07-01")
+	uc.CreateTodo(title, dueDate, false)
+	todos, total, err = uc.GetAllTodos(0, 10)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(todos))
+	assert.Equal(t, int64(1), total)
+	assert.Equal(t, title, todos[0].Title)
+	assert.Equal(t, false, todos[0].Done)
+	assert.Equal(t, dueDate, todos[0].DueDate)
+
+	todos, total, err = uc.GetAllTodos(1, 10)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(todos))
+	assert.Equal(t, int64(1), total)
 }
 
 func TestDeleteTodo(t *testing.T) {
@@ -88,18 +119,20 @@ func TestDeleteTodo(t *testing.T) {
 	err := uc.CreateTodo(title, dueDate, false)
 	assert.NoError(t, err)
 
-	todos, err := uc.GetAllTodos()
+	todos, total, err := uc.GetAllTodos(0, 10)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(todos))
+	assert.Equal(t, int64(1), total)
 
 	// Delete the todo
 	err = uc.DeleteTodo(todos[0].ID)
 	assert.NoError(t, err)
 
 	// Verify the todo is deleted
-	todos, err = uc.GetAllTodos()
+	todos, total, err = uc.GetAllTodos(0, 10)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(todos))
+	assert.Equal(t, int64(0), total)
 }
 
 func TestGetTodoByID(t *testing.T) {
@@ -113,9 +146,11 @@ func TestGetTodoByID(t *testing.T) {
 	err := uc.CreateTodo(title, dueDate, done)
 	assert.NoError(t, err)
 
-	todos, err := uc.GetAllTodos()
+	todos, total, err := uc.GetAllTodos(0, 10)
+
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(todos))
+	assert.Equal(t, int64(1), total)
 
 	// Find the todo by ID
 	foundTodo, err := uc.GetTodoByID(todos[0].ID)
@@ -136,10 +171,12 @@ func TestUpdateTodo(t *testing.T) {
 	err := uc.CreateTodo(title, dueDate, done)
 	assert.NoError(t, err)
 
-	todos, err := uc.GetAllTodos()
+	todos, total, err := uc.GetAllTodos(0, 10)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(todos))
 	assert.Equal(t, false, todos[0].Done)
+	assert.Equal(t, int64(1), total)
+
 	// Update the todo
 	todos[0].Title = "Learn Clean Architecture Updated"
 	err = uc.UpdateTodo(todos[0].ID, todos[0].Title, todos[0].DueDate, true)

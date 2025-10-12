@@ -65,13 +65,18 @@ func (h *TodoHandler) Create(ctx context.Context, input *CreateTodoInput) (*Crea
 	resp.Body.Message = "Todo item created successfully"
 	return resp, nil
 }
-func (h *TodoHandler) List(ctx context.Context, input *struct{}) (*ListTodosOutput, error) {
-	todos, err := h.uc.GetAllTodos()
+func (h *TodoHandler) List(ctx context.Context, input *ListTodosInput) (*ListTodosOutput, error) {
+	todos, total, err := h.uc.GetAllTodos(input.Page, input.Limit)
 	if err != nil {
 		return nil, err
 	}
 	resp := &ListTodosOutput{}
-	resp.Body.Todos = todos
+	resp.Body.Data = todos
+	resp.Body.Meta = ListResponseMeta{
+		Page:  input.Page,
+		Limit: input.Limit,
+		Total: total,
+	}
 	return resp, nil
 
 }
