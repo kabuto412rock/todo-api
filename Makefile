@@ -15,6 +15,9 @@ build:
 run:
 	air -c .air.toml
 
+run1: build
+	exec ./$(BIN_DIR)/$(APP_NAME)
+
 dev: fmt vet test run
 
 test:

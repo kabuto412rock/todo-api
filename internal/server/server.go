@@ -24,8 +24,8 @@ type Deps struct {
 	TodoRepo  todoDomain.TodoRepository
 }
 
-// NewRouter creates http.Handler with routes registered.
-func NewRouter(d Deps) http.Handler {
+// NewHandler creates http.Handler with routes registered.
+func NewHandler(d Deps) http.Handler {
 	r := chi.NewRouter()
 	// Top-level HTTP logger (can capture response body)
 	r.Use(middleware.HTTPLogger())

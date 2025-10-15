@@ -4,7 +4,10 @@ import (
 	"context"
 	"log"
 	netHttp "net/http"
+	"os/signal"
 	"regexp"
+	"syscall"
+	"time"
 
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -17,10 +20,12 @@ import (
 )
 
 func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
 	_ = godotenv.Load(".env")
 	cfg := config.Load()
 
-	ctx := context.Background()
 	clientOptions := options.Client().ApplyURI(cfg.MongoURI)
 	maskDBURI := MaskDBURI(cfg.MongoURI)
 	log.Printf("Connecting to MongoDB at %s...\n", maskDBURI)
@@ -54,11 +59,32 @@ func main() {
 		TodoRepo:  todoRepo.NewMongoTodoRepository(db),
 	}
 
-	h := server.NewRouter(deps)
-	log.Printf("Starting server on %s", cfg.ServerAddress)
-	if err := netHttp.ListenAndServe(cfg.ServerAddress, h); err != nil {
-		log.Fatalf("server error: %v", err)
+	h := server.NewHandler(deps)
+
+	srv := &netHttp.Server{
+		Addr:    cfg.ServerAddress,
+		Handler: h,
 	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != netHttp.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+	// Listen for the interrupt signal.
+	<-ctx.Done()
+
+	// Restore default  behavior on the interrupt signal and notify user of shutdown.
+	stop()
+	log.Println("shutting down gracefully, press Ctrl+C again to force")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Printf("server forced to shutdown: %v", err)
+	}
+
+	log.Println("Server exiting")
 }
 
 func MaskDBURI(uri string) string {
